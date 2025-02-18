@@ -1,0 +1,112 @@
+.screenContents {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  padding-top: 70px;
+}
+
+body {
+ background-image: url('images/background.png');
+ background-size: cover;
+  min-height: 100vh;
+}
+/* Center the player on the left side */
+.left-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 50%;
+  margin-left: 5vw;
+  margin-right: 10vw;
+  margin-top: 1vh;
+  gap: 0vh; /* in case i wanna change gap later */
+  position: sticky;
+
+}
+.right-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 50%;
+
+  margin-right: auto;
+  position: sticky;
+  top: 0;
+
+}
+
+/* Style the image */
+.album-image {
+  width: 25vw;
+  height: auto;
+  border-radius: 10vw;
+  border: 2px solid rgba(172, 172, 172, 0.51);
+}
+
+/* For the button layout */
+.row.align-items-start {
+  display: flex;
+  justify-content: center;  /* Ensure buttons are centered */
+  align-items: center;
+  gap: 0.1vw; /* Add some space between buttons */
+  position: sticky;
+}
+
+/* Scrollable playlist container */
+.scrollable-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);  /* 3 columns in a row */
+  row-gap: 5vw;
+  padding-left: 100px;
+  padding-top: 0px;
+
+  gap: 2vw;/* Spacing between items */
+  overflow-y: auto;
+  max-height: 75vh;  /* Limit the height of the container */
+
+  padding-right: 2vw; /* Space on the right */
+  margin-top: 2vh;  /* Adjust for spacing */
+}
+.scrollable-container::-webkit-scrollbar {
+  display: none;  /* For Chrome, Safari, and Opera */
+}
+
+.playlist-img {
+  width: 10vw;
+  height: auto;
+  border-radius: 3vw;
+  border: 0.1vw solid rgba(172, 172, 172, 0.51);
+}
+.button:hover {
+  transform: scale(1.2);
+  transition: transform 0.3s ease;
+}
+
+.playlist-col {
+  text-align: left;
+  margin-bottom: 2vh;  /* Space between playlist items */
+}
+.playlist-name {
+    font-size: 1.5vh;  /* Adjust the font size */
+    text-align: center;
+}
+/* Make the .current-song-name scrollable automatically if the text overflows */
+.current-song-name {
+  font-size: clamp(1vw,2vw, 10vw);;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 0;
+  width: 100%;  /* Make the element take full width */
+  max-width: 20vw;  /* Limit the width of the text container */
+  position: sticky;
+
+}
+.song-controllers{
+  width: 5vw;
+  height: 5vw;
+}
+
+

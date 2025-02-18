@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SpotiRemote</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+
+<body>
+
+
+
+  <section class="screenContents">
+  <div class="row align-items-start entire-page">
+    <div class="left-column">
+      <div class="col-6 left-container">
+        <img id="albumImageUrl" class="img-fluid album-image"><br>
+        <div class="col-auto">
+          <h1 id="currentSongName" class="current-song-name">Loading song...</h1>
+        </div>
+        <div class="row align-items-start">
+          <h3 id="songCompletion">0:00</h3>
+          <progress id="progressBar" class=progress-bar" value="0" max="100"></progress>
+          <h3 id="songTotalDuration">0:00</h3>
+        </div>
+        <div class="row align-items-start">
+
+          <form onclick="toggleShuffle()">
+            <input type="hidden" value="skip">
+            <input type="image" id="ShuffleButton" src="static/images/xx.png" alt="Clickable Image" class="song-controllers">
+          </form>
+
+
+          <form action="/rewindOrSkip" method="POST">
+            <input type="hidden" name="rewindOrSkip" value="rewind">
+            <input type="image" src="static/images/previousSong.png" alt="Clickable Image" class="song-controllers">
+          </form>
+
+          <form onclick="togglePlayPause()">
+            <input type="hidden" value="skip">
+            <input type="image" id="playPauseButton" src="static/images/pause.png" alt="Clickable Image" class="song-controllers">
+          </form>
+
+          <form action="/rewindOrSkip" method="POST">
+            <input type="hidden" name="rewindOrSkip" value="skip">
+            <input type="image" src="static/images/nextSong.png" alt="Clickable Image" class="song-controllers">
+          </form>
+
+          <form onclick="toggleReplay()">
+            <input type="hidden" value="skip">
+            <input type="image" id="replayButton" src="static/images/repeatOff.png" alt="Clickable Image" class="song-controllers">
+          </form>
+
+
+        </div>
+      </div>
+    </div>
+
+    <div class="right-container">
+      <div class="scrollable-container">
+        {% for playlist in playlists %}
+          <div class="playlists-col">
+            {% if playlist.image_url %}
+              <form action="/start_playlist" method="POST">
+                <input type="hidden" name="playlist_uri" value="{{ playlist.playlist_uri }}">
+                <input type="image" src="{{ playlist.image_url }}" alt="Clickable Image" class="img-fluid playlist-img button">
+              </form>
+            {% endif %}
+            <!--<div class="playlist-name">{{ playlist.name }}<br></div> //-->
+          </div>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+  <script>
+    // Function to fetch the current song and update the page
+    function fetchCurrentSongCoverandName() {
+
+      fetch('/get_current_song')
+        .then(response => response.json())
+        .then(data => {
+          // Update the song name on the page
+          document.getElementById("currentSongName").innerText = data.current_song_name;
+          document.getElementById("albumImageUrl").src = data.album_image_url;
+        })
+        .catch(error => console.error('Error fetching current song:', error));
+    }
+
+    function fetchStartingPlaybackState() {
+        fetch('/starting_playback_state')
+            .then(response => response.json())
+            .then(data =>  {
+              if (data.status == "pause") {
+                    document.getElementById("playPauseButton").src = "static/images/pause.png";
+              } else if (data.status == "play") {
+                    document.getElementById("playPauseButton").src = "static/images/play.png";
+              }
+            })
+        .catch(error => console.error('Error fetching playback starting state:', error));
+    }
+
+
+
+    // Call the function every 1 seconds (1000ms) to refresh the song
+    setInterval(fetchCurrentSongCoverandName,500)
+    setInterval(songCompletion,500);
+
+    setInterval(updateShuffleState,500);
+    setInterval(fetchStartingPlaybackState,500);
+    setInterval(updateRepeatState,500);
+
+
+
+    // Fetch it immediately on page load
+    fetchCurrentSongCoverandName();
+    songCompletion();
+
+    updateShuffleState();
+    fetchStartingPlaybackState();
+    updateRepeatState();
+
+    function songCompletion() {
+        fetch('/song_related_time_items', { method: 'POST' })
+            .then(response => response.json())
+            .then(data =>  {
+                document.getElementById("songCompletion").innerText = data.song_completion;
+                document.getElementById("songTotalDuration").innerText = data.song_Total_length;
+                document.getElementById("progressBar").value = data.progressOfSong;
+            })
+        .catch(error => console.error('Error fetching song time state:', error));
+    }
+    function togglePlayPause() {
+      event.preventDefault();
+        fetch('/play_pause', {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                if (data.status == "pause") {
+                    document.getElementById("playPauseButton").src = "static/images/pause.png";
+                } else if (data.status == "play") {
+                    document.getElementById("playPauseButton").src = "static/images/play.png";
+                }
+            })}
+    function toggleShuffle() {
+      event.preventDefault()
+        fetch('/enableDisableShuffle', {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                if (data.shuffleState  === false) {
+                    document.getElementById("ShuffleButton").src = "static/images/shuffleOff.png";
+                } else if(data.shuffleState  === true){
+                    document.getElementById("ShuffleButton").src =  "static/images/shuffleOn.png";
+                }else{
+                    document.getElementById("ShuffleButton").src =  "static/images/xx.png";
+                }
+            })}
+
+
+    function toggleReplay() {
+      event.preventDefault()
+        fetch('/set_repeat_song_state', {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                if (data.repeatState === "track") {
+                    document.getElementById("replayButton").src = "static/images/repeatSong.png";
+                } else if(data.repeatState === "context") {
+                    document.getElementById("replayButton").src = "static/images/repeatContext.png";
+                } else if(data.repeatState === "off") {
+                    document.getElementById("replayButton").src = "static/images/repeatOff.png";
+                }else{
+                        document.getElementById("replayButton").src = "static/images/xx.png";
+                }
+    }   )   }
+
+    function updateShuffleState() {
+    fetch('/enableDisableShuffle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'setShuffleState': 'startingState'  // Send the "startingState" to get current shuffle state
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.shuffleState === "true") {
+            // Shuffle is enabled
+            document.getElementById("ShuffleButton").src = "static/images/shuffleOn.png";
+        } else if (data.shuffleState === "false") {
+            // Shuffle is disabled
+            document.getElementById("ShuffleButton").src = "static/images/shuffleOff.png";
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+    function updateRepeatState() {
+    fetch('/set_repeat_song_state', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'setRepeatState': 'startingState'  // Send the "startingState" to get current shuffle state
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.repeatState === "track") {
+        document.getElementById("replayButton").src = "static/images/repeatSong.png";
+      } else if(data.repeatState === "context") {
+        document.getElementById("replayButton").src = "static/images/repeatContext.png";
+      } else if(data.repeatState === "off") {
+        document.getElementById("replayButton").src = "static/images/repeatOff.png";
+      }else{
+        document.getElementById("replayButton").src = "static/images/xx.png";
+      }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+  </script>
+</body>
+</html>
