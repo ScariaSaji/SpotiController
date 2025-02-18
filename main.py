@@ -16,8 +16,13 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')  # change the key later
 
 client_id = os.getenv('client_id')
 client_secret = os.getenv('client_secret')
+
 local_ip = socket.gethostbyname(socket.gethostname())
-redirect_uri = f'http://{local_ip}:5000/callback'
+vercel_url = os.getenv('VERCEL_URL')
+
+# redirect_uri for local and production environments
+redirect_uri = f'http://{local_ip}:5000/callback' if not vercel_url else f'https://{vercel_url}/callback'
+
 scope = 'playlist-read-private user-read-currently-playing user-modify-playback-state user-read-playback-state app-remote-control user-read-recently-played'  # more scopes do this - scope = 'playlist-read-private,streaming'. so basically add a comma
 
 cache_handler = FlaskSessionCacheHandler(session)
