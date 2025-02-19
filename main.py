@@ -79,7 +79,7 @@ def get_current_song():
 
     current_song_name = []
     album_image_url = []
-    song_total_duration = []
+    song_total_duration = 0
 
     current_playback = sp.current_playback()
     if current_playback:
@@ -170,7 +170,7 @@ def previous_song():
 @app.route('/enableDisableShuffle', methods=['POST'])
 def enableDisableShuffle():
     current_playback = sp.current_playback()
-    context = current_playback['context']
+
 
     if current_playback and 'shuffle_state' in current_playback:
         shuffle_enabled = current_playback['shuffle_state']
