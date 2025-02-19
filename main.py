@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')  # change the key later
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 client_id = os.getenv('client_id')
 client_secret = os.getenv('client_secret')
@@ -57,17 +57,18 @@ def get_playlists():
     playlists = sp.current_user_playlists()
     playlists_info = []
 
+    current_playback = sp.current_playback()
+    if current_playback:
+        for pl in playlists['items']:
+            name = pl['name']
+            image_url = None
+            playlist_uri = pl['uri']
+            if pl.get('images'):
+                image_url = pl['images'][0]['url']
+                playlists_info.append({'name': name, 'image_url' : image_url,'playlist_uri' : playlist_uri})
 
-    for pl in playlists['items']:
-        name = pl['name']
-        image_url = None
-        playlist_uri = pl['uri']
-        if pl.get('images'):
-            image_url = pl['images'][0]['url']
-            playlists_info.append({'name': name, 'image_url' : image_url,'playlist_uri' : playlist_uri})
-
-    #playlists_info.sort(key=lambda x: x['image_url'])
-    #return playlists_html
+        #playlists_info.sort(key=lambda x: x['image_url'])
+        #return playlists_html
     return render_template('MainPage.html', playlists=playlists_info)
 
 @app.route('/get_current_song')
@@ -76,16 +77,21 @@ def get_current_song():
         auth_url = sp_oauth.get_authorize_url()
         return redirect(auth_url)
 
+    current_song_name = []
+    album_image_url = []
+    song_total_duration = []
 
-    current_song_details = sp.currently_playing()
-    if current_song_details and current_song_details.get('item'):
-        current_song_name = current_song_details['item']['name']
-        song_total_duration = current_song_details['item']["duration_ms"]
-        album_image_url = current_song_details['item']['album']['images'][0]['url']
+    current_playback = sp.current_playback()
+    if current_playback:
+        current_song_details = sp.currently_playing()
+        if current_song_details and current_song_details.get('item'):
+            current_song_name = current_song_details['item']['name']
+            song_total_duration = current_song_details['item']["duration_ms"]
+            album_image_url = current_song_details['item']['album']['images'][0]['url']
 
-    else:
-        current_song_name = "No song playing"
-        album_image_url = "Default image URL or fallback"
+        else:
+            current_song_name = "No song playing"
+            album_image_url = "Default image URL or fallback"
 
     return jsonify({'current_song_name': current_song_name,'album_image_url': album_image_url, 'song_total_duration': song_total_duration})
 
@@ -165,6 +171,7 @@ def previous_song():
 def enableDisableShuffle():
     current_playback = sp.current_playback()
     context = current_playback['context']
+
     if current_playback and 'shuffle_state' in current_playback:
         shuffle_enabled = current_playback['shuffle_state']
 
@@ -201,6 +208,7 @@ def enableDisableShuffle():
 @app.route('/set_repeat_song_state', methods=['POST'])
 def repeatModeSetup():
     current_playback = sp.current_playback()
+
     if current_playback and 'repeat_state' in current_playback:
         current_repeat_state = current_playback['repeat_state']
         context = current_playback['context']
